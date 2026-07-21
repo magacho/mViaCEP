@@ -12,6 +12,13 @@ Biblioteca **client-side** open source que usa a API gratuita do [ViaCEP](https:
 
 Consulte as [Issues](../../issues) para o backlog e as [Milestones](../../milestones) para o progresso por fase (Core → Adapters → Distribuição).
 
+## Exemplos
+
+Há uma demo mínima e executável por adapter em [`examples/`](./examples/):
+vanilla (HTML único via CDN), React e Vue 3 (apps Vite) e Angular (componente
+standalone). Veja o [índice dos exemplos](./examples/README.md) para o que cada
+um mostra e como rodar.
+
 ## Licença
 
 [MIT](./LICENSE)
