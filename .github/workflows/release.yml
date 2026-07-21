@@ -1,0 +1,64 @@
+name: Release
+
+# Dispara ao empurrar uma tag de versão (ex.: v0.1.0, v0.0.2-M2).
+# Requer o secret NPM_TOKEN configurado no repositório para publicar no npm.
+on:
+  push:
+    tags:
+      - "v*"
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write # criar o GitHub Release
+      id-token: write # provenance do npm
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          registry-url: "https://registry.npmjs.org"
+          cache: npm
+
+      - run: npm ci
+
+      # Gate: nada é publicado se algo estiver vermelho.
+      - run: npm run lint
+      - run: npm run typecheck
+      - run: npm test
+      - run: npm run build
+
+      # Verificação do bundle UMD/IIFE: o global mViaCEP deve expor a API do
+      # core + o autofill vanilla.
+      - name: Verify CDN bundle exposes expected API
+        run: |
+          for name in mViaCEP lookup search bindCep; do
+            grep -q "$name" dist/cdn/mviacep.global.js \
+              || { echo "::error::CDN bundle não expõe '$name'"; exit 1; }
+          done
+          echo "CDN bundle OK (mViaCEP.lookup/search/bindCep presentes)."
+
+      # Pré-releases (tag com hífen, ex.: v0.0.2-M2) vão para a dist-tag 'next';
+      # versões estáveis (v0.1.0) vão para 'latest'.
+      - name: Determine npm dist-tag
+        id: disttag
+        run: |
+          if [[ "${GITHUB_REF_NAME}" == *-* ]]; then
+            echo "value=next" >> "$GITHUB_OUTPUT"
+          else
+            echo "value=latest" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Publish to npm
+        run: npm publish --provenance --access public --tag ${{ steps.disttag.outputs.value }}
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: dist/cdn/mviacep.global.js
+          prerelease: ${{ contains(github.ref_name, '-') }}
+          generate_release_notes: true
