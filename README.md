@@ -6,11 +6,11 @@ Biblioteca **client-side** open source que usa a API gratuita do [ViaCEP](https:
 - **Roda no browser** — leve, sem dependências pesadas; distribuída via npm (ESM/CJS) e via `<script>` por CDN (UMD).
 - **Erros tipados** — distingue CEP inválido, CEP não encontrado e falha de rede (o ViaCEP responde HTTP 200 com `{ "erro": true }` para CEP inexistente).
 
-> 🚧 Em construção. O trabalho é acompanhado pelas [Issues](../../issues) e milestones do projeto.
+> ✅ **v0.1.0 — primeiro MVP.** Núcleo + adapters (vanilla/React/Vue/Angular) + distribuição CDN. Acompanhe o progresso pelas [Issues](../../issues) e [Milestones](../../milestones).
 
 ## Status
 
-Consulte as [Issues](../../issues) para o backlog e as [Milestones](../../milestones) para o progresso por fase (Core → Adapters → Distribuição).
+Primeiro release funcional (`0.1.0`). Consulte as [Milestones](../../milestones) para o histórico por fase (Core → Adapters → Distribuição) e a [documentação](./docs/) para uso.
 
 ## Documentação
 
