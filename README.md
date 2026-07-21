@@ -14,6 +14,8 @@ Primeiro release funcional (`0.1.0`). Consulte as [Milestones](../../milestones)
 
 ## Documentação
 
+📖 **Site ao vivo: <https://magacho.github.io/mViaCEP/>** · 🧪 [Playground (ViaCEP real)](https://magacho.github.io/mViaCEP/examples/playground.html)
+
 - **[Começando](./docs/guide/getting-started.md)** — instalação via npm e CDN.
 - Guias por adapter: [Vanilla](./docs/guide/vanilla.md) · [React](./docs/guide/react.md) · [Vue](./docs/guide/vue.md) · [Angular](./docs/guide/angular.md).
 - **[Referência de API do core](./docs/api/core.md)** — `lookup`, `search`, validação, erros tipados.
