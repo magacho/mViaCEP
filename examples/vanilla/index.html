@@ -1,0 +1,196 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>mViaCEP — demo vanilla</title>
+    <style>
+      body {
+        font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+        max-width: 32rem;
+        margin: 2rem auto;
+        padding: 0 1rem;
+        color: #1a1a1a;
+      }
+      h1 {
+        font-size: 1.4rem;
+      }
+      form {
+        display: grid;
+        gap: 0.75rem;
+      }
+      label {
+        display: grid;
+        gap: 0.25rem;
+        font-size: 0.85rem;
+        color: #444;
+      }
+      input {
+        padding: 0.5rem;
+        font-size: 1rem;
+        border: 1px solid #ccc;
+        border-radius: 6px;
+      }
+      input[readonly] {
+        background: #f5f5f5;
+        color: #333;
+      }
+      #status {
+        min-height: 1.25rem;
+        font-size: 0.9rem;
+      }
+      #status.loading {
+        color: #0366d6;
+      }
+      #status.error {
+        color: #c00;
+      }
+      #status.ok {
+        color: #087f23;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>mViaCEP — autopreenchimento (vanilla)</h1>
+    <p>Digite um CEP (ex.: <code>01001-000</code>) e os campos abaixo são preenchidos automaticamente.</p>
+
+    <form autocomplete="off">
+      <label>
+        CEP
+        <input id="cep" type="text" inputmode="numeric" placeholder="00000-000" maxlength="9" />
+      </label>
+
+      <div id="status" role="status" aria-live="polite"></div>
+
+      <label>
+        Logradouro
+        <input id="logradouro" type="text" readonly />
+      </label>
+      <label>
+        Bairro
+        <input id="bairro" type="text" readonly />
+      </label>
+      <label>
+        Localidade
+        <input id="localidade" type="text" readonly />
+      </label>
+      <label>
+        UF
+        <input id="uf" type="text" readonly />
+      </label>
+    </form>
+
+    <!--
+      Como carregar a biblioteca
+      ==========================
+
+      (a) PRIMÁRIO — via CDN jsDelivr, apontando para o build global publicado no npm.
+          Este é o modo de uso final, sem etapa de build no projeto do consumidor:
+
+            <script src="https://cdn.jsdelivr.net/npm/mviacep/dist/cdn/mviacep.global.js"></script>
+
+          Enquanto o pacote NÃO estiver publicado no npm, troque a linha acima pelo
+          build local, gerado com `npm run build` na raiz do repositório:
+
+            <script src="../../dist/cdn/mviacep.global.js"></script>
+
+      Qualquer um dos dois expõe o global `window.mViaCEP`.
+
+      NOTA sobre `bindCep`: por decisão do projeto, o adapter vanilla (`bindCep`) passa a
+      integrar o bundle global na issue #12. Até lá, o global expõe apenas o core
+      (`lookup`, `search`, erros tipados). Por isso o script abaixo usa `mViaCEP.bindCep`
+      quando disponível e, como fallback, faz o mesmo trabalho chamando `mViaCEP.lookup`
+      diretamente — assim a demo já roda hoje e continuará correta após o #12.
+    -->
+
+    <!-- Ative UMA das linhas abaixo conforme sua situação (veja o comentário acima). -->
+    <!-- <script src="https://cdn.jsdelivr.net/npm/mviacep/dist/cdn/mviacep.global.js"></script> -->
+    <script src="../../dist/cdn/mviacep.global.js"></script>
+
+    <script>
+      (function () {
+        var cepInput = document.getElementById("cep");
+        var statusEl = document.getElementById("status");
+        var fields = {
+          logradouro: document.getElementById("logradouro"),
+          bairro: document.getElementById("bairro"),
+          localidade: document.getElementById("localidade"),
+          uf: document.getElementById("uf"),
+        };
+
+        if (typeof window.mViaCEP === "undefined") {
+          setStatus("error", "Falha ao carregar a biblioteca. Confira o <script> (CDN ou build local).");
+          return;
+        }
+
+        function setStatus(kind, text) {
+          statusEl.className = kind || "";
+          statusEl.textContent = text || "";
+        }
+
+        function clearFields() {
+          for (var k in fields) fields[k].value = "";
+        }
+
+        // onFill: grava o endereço resolvido nos campos read-only.
+        function onFill(address) {
+          fields.logradouro.value = address.logradouro || "";
+          fields.bairro.value = address.bairro || "";
+          fields.localidade.value = address.localidade || "";
+          fields.uf.value = address.uf || "";
+          setStatus("ok", "Endereço encontrado.");
+        }
+
+        // onError: distingue "não encontrado" (NotFoundError) das demais falhas.
+        function onError(error) {
+          clearFields();
+          if (error && error.type === "not_found") {
+            setStatus("error", "CEP não encontrado.");
+          } else if (error && error.type === "invalid_cep") {
+            setStatus("error", "CEP inválido.");
+          } else {
+            setStatus("error", "Erro ao consultar o CEP. Tente novamente.");
+          }
+        }
+
+        function onStart() {
+          setStatus("loading", "Buscando…");
+        }
+
+        // Caminho PRIMÁRIO: adapter vanilla `bindCep` (disponível no global a partir do #12).
+        if (typeof window.mViaCEP.bindCep === "function") {
+          window.mViaCEP.bindCep(cepInput, {
+            onFill: onFill,
+            onError: onError,
+            onStart: onStart,
+            debounceMs: 400,
+          });
+          return;
+        }
+
+        // Fallback (pré-#12): mesma UX usando o core `lookup` diretamente.
+        var timer;
+        var latest = 0;
+        cepInput.addEventListener("input", function () {
+          clearTimeout(timer);
+          timer = setTimeout(function () {
+            var value = cepInput.value;
+            if (!window.mViaCEP.isValid(value)) return;
+            var id = ++latest;
+            onStart();
+            window.mViaCEP.lookup(window.mViaCEP.normalize(value)).then(
+              function (address) {
+                if (id !== latest) return;
+                onFill(address);
+              },
+              function (error) {
+                if (id !== latest) return;
+                onError(error);
+              }
+            );
+          }, 400);
+        });
+      })();
+    </script>
+  </body>
+</html>
