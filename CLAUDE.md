@@ -48,10 +48,6 @@ Design rules:
 - **Cache keys on the normalized CEP** so `01001000`, `01001-000`, and `"01001000 "` share one entry.
 - **Reverse lookup** (UF / city / street → list of CEPs, `.../ws/{uf}/{cidade}/{logradouro}/json/`) is a separate core function from the primary CEP → address lookup.
 
-## Distribution
-
-Published to **npm** (ESM + CJS) and shipped as a **UMD** bundle usable directly via `<script>` from a CDN. Each framework adapter should be a separate entry point / subpath export so consumers only pull what they use and tree-shaking works.
-
 ## Tooling & commands (recommended)
 
 TypeScript throughout, bundled with **tsup** (emits ESM + CJS + UMD in one pass), tested with **Vitest**, linted with **ESLint + Prettier**. Once `package.json` exists, wire these scripts:
@@ -68,3 +64,31 @@ TypeScript throughout, bundled with **tsup** (emits ESM + CJS + UMD in one pass)
 | Type-check only | `npx tsc --noEmit` |
 
 When testing the client, **mock `fetch`** — never hit the live ViaCEP API from the test suite. Cover the three response shapes explicitly: a valid address, the `{ "erro": true }` not-found body, and a network/timeout failure.
+
+## Development workflow (wave-based, issue-driven)
+
+Work is tracked in **GitHub Issues** grouped into milestones (`M1 Core`, `M2 Adapters`, `M3 Distribuição & Release`) and executed in **waves**. Waves reflect real dependencies: everything in a wave can run in parallel; the next wave starts only once the previous one is integrated.
+
+- **One issue → one branch → one PR.** Branch names: `feat/<area>-<name>` (e.g. `feat/core-cep`, `feat/adapter-react`). PR title ends with the issue number and the body includes `Closes #N`.
+- **TDD is mandatory for code issues.** Write the test first, watch it fail, implement until green. Tests live next to nothing framework-specific in the core; adapters test their own integration. Never add a "write tests later" issue.
+- **Parallel work must not touch shared files.** Subagents implementing a wave create only their own module + test files and **do not edit the barrels** (`src/index.ts`, `src/core/index.ts`). Barrel/export wiring is done in a single follow-up step after the wave's PRs merge, then validated (`typecheck` → `lint` → `test` → `build`) and committed. This keeps parallel PRs conflict-free.
+- **Definition of Done includes docs.** Each adapter PR ships its own usage snippet; the docs site + API reference are consolidated in the docs issue.
+- **Merge policy:** squash + delete branch. `.claude/` (agent worktrees) is git-ignored and must never be committed.
+
+### Waves
+
+| Wave | Issues | Depends on |
+|------|--------|-----------|
+| 0 Bootstrap | #1 | — |
+| 1 Core primitives | #2 cep · #3 errors · #4 types | #1 |
+| 2 Core runtime | #5 client · #6 reverse search | #2 #3 #4 |
+| 3 Adapters (fan-out) | #7 vanilla · #8 react · #9 vue · #10 angular · #11 examples | #5 |
+| 4 Distribution | #12 build · #13 docs (VitePress) · #14 release | #7–#10 |
+
+## Distribution
+
+Built with **tsup** into three consumption modes from one source:
+
+- **ESM** (`dist/index.js`) — primary, tree-shakeable. Import per subpath: `mviacep`, `mviacep/react`, `mviacep/vue`, `mviacep/angular`, `mviacep/vanilla`.
+- **CJS** (`dist/index.cjs`) — legacy `require()`.
+- **IIFE global** (`dist/cdn/mviacep.global.js`) — a single `<script>` exposing `window.mViaCEP`. This bundle packages **core + the vanilla adapter** (so `<script>` users get `lookup`/`search` *and* DOM autofill with no build step). React/Vue/Angular adapters are npm-only and stay out of the global bundle. The CDN entry is a dedicated `src/cdn.ts` re-exporting core + vanilla (wired in #12, depends on #7).
