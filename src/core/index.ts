@@ -2,4 +2,5 @@
 export * from "./cep";
 export * from "./client";
 export * from "./errors";
+export * from "./search";
 export type * from "./types";
