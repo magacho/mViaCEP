@@ -5,6 +5,7 @@
     "moduleResolution": "Bundler",
     "lib": ["ES2020", "DOM", "DOM.Iterable"],
     "strict": true,
+    "experimentalDecorators": true,
     "declaration": true,
     "esModuleInterop": true,
     "skipLibCheck": true,
