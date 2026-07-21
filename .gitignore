@@ -8,3 +8,6 @@ coverage/
 
 # agent worktrees / local tooling
 .claude/
+
+# gerado no deploy de docs (cópia do playground)
+docs/public/examples/

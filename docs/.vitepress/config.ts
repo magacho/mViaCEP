@@ -5,6 +5,8 @@ import { defineConfig } from "vitepress";
 // biblioteca (npm e CDN) e para quem precisa da referência do core.
 export default defineConfig({
   lang: "pt-BR",
+  // Project Pages é servido sob /<repo>/, então o site precisa desse base.
+  base: "/mViaCEP/",
   title: "mViaCEP",
   description:
     "Biblioteca client-side que envolve a API gratuita do ViaCEP para autopreenchimento e validação de endereço — agnóstica de framework, com adaptadores React, Vue, Angular e vanilla.",
