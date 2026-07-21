@@ -1,6 +1,6 @@
 {
   "name": "mviacep",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Browser-side library wrapping the free ViaCEP API for address autofill and validation, framework-agnostic with React, Vue, Angular and vanilla adapters.",
   "license": "MIT",
   "author": "magacho",
@@ -46,7 +46,8 @@
       "types": "./dist/adapters/vanilla/index.d.ts",
       "import": "./dist/adapters/vanilla/index.js",
       "require": "./dist/adapters/vanilla/index.cjs"
-    }
+    },
+    "./package.json": "./package.json"
   },
   "scripts": {
     "build": "tsup",
