@@ -4,6 +4,14 @@
   "description": "Browser-side library wrapping the free ViaCEP API for address autofill and validation, framework-agnostic with React, Vue, Angular and vanilla adapters.",
   "license": "MIT",
   "author": "magacho",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/magacho/mViaCEP.git"
+  },
+  "bugs": {
+    "url": "https://github.com/magacho/mViaCEP/issues"
+  },
+  "homepage": "https://github.com/magacho/mViaCEP#readme",
   "type": "module",
   "sideEffects": false,
   "keywords": ["cep", "viacep", "endereco", "address", "autofill", "validation", "brasil"],
