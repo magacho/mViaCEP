@@ -8,6 +8,11 @@
   "sideEffects": false,
   "keywords": ["cep", "viacep", "endereco", "address", "autofill", "validation", "brasil"],
   "files": ["dist"],
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "unpkg": "./dist/cdn/mviacep.global.js",
+  "jsdelivr": "./dist/cdn/mviacep.global.js",
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",

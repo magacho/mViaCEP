@@ -16,9 +16,9 @@ export default defineConfig([
     sourcemap: true,
     treeshake: true,
   },
-  // CDN bundle: core only, UMD-style global `mViaCEP`
+  // CDN bundle: core + vanilla adapter, UMD-style global `mViaCEP`
   {
-    entry: { mviacep: "src/index.ts" },
+    entry: { mviacep: "src/cdn.ts" },
     format: ["iife"],
     globalName: "mViaCEP",
     outDir: "dist/cdn",
