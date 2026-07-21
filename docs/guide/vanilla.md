@@ -2,7 +2,7 @@
 
 O adaptador vanilla liga o núcleo do mViaCEP a um `<input>` comum, escrevendo o autopreenchimento diretamente no DOM. Sua única função pública é **`bindCep`**.
 
-É a base do bundle CDN: por ser _dependency-free_ (só importa o núcleo e usa APIs padrão do DOM), ele acompanha o núcleo no global `window.mViaCEP` — veja [Começando → CDN](/guide/getting-started#uso-via-cdn-script-sem-build).
+É a base do bundle CDN: por ser _dependency-free_ (só importa o núcleo e usa APIs padrão do DOM), ele acompanha o núcleo no global `window.mViaCEP` — veja [Começando → CDN](./getting-started.md#uso-via-cdn-script-sem-build).
 
 ## Importação
 

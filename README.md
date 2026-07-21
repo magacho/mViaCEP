@@ -10,11 +10,15 @@ Biblioteca **client-side** open source que usa a API gratuita do [ViaCEP](https:
 
 ## Status
 
-Primeiro release funcional (`0.1.0`). Consulte as [Milestones](../../milestones) para o histórico por fase (Core → Adapters → Distribuição) e a [documentação](./docs/) para uso.
+Primeiro release funcional (`0.1.0`). Consulte as [Milestones](../../milestones) para o histórico por fase (Core → Adapters → Distribuição) e a [documentação](./docs/guide/getting-started.md) para uso.
 
 ## Documentação
 
-Guia de uso, guias por adapter e a referência completa da API do core estão no site de documentação (VitePress), em [`docs/`](./docs/) — rode localmente com `npm run docs:dev`.
+- **[Começando](./docs/guide/getting-started.md)** — instalação via npm e CDN.
+- Guias por adapter: [Vanilla](./docs/guide/vanilla.md) · [React](./docs/guide/react.md) · [Vue](./docs/guide/vue.md) · [Angular](./docs/guide/angular.md).
+- **[Referência de API do core](./docs/api/core.md)** — `lookup`, `search`, validação, erros tipados.
+
+O conteúdo acima também roda como site (VitePress): `npm run docs:dev`.
 
 ## Exemplos
 

@@ -50,7 +50,7 @@ console.log(address.localidade, address.uf); // "São Paulo" "SP"
 
 ## Links rápidos
 
-- [Começando](/guide/getting-started) — instalação via npm e CDN, a ideia agnóstica de framework e o gotcha do `{ "erro": true }`.
-- Guias por adaptador: [Vanilla](/guide/vanilla) · [React](/guide/react) · [Vue](/guide/vue) · [Angular](/guide/angular).
-- [Referência de API do core](/api/core) — `lookup`, `search`, `normalize`/`isValid`/`mask`, erros tipados e o tipo `Address`.
+- [Começando](./guide/getting-started.md) — instalação via npm e CDN, a ideia agnóstica de framework e o gotcha do `{ "erro": true }`.
+- Guias por adaptador: [Vanilla](./guide/vanilla.md) · [React](./guide/react.md) · [Vue](./guide/vue.md) · [Angular](./guide/angular.md).
+- [Referência de API do core](./api/core.md) — `lookup`, `search`, `normalize`/`isValid`/`mask`, erros tipados e o tipo `Address`.
 - [Exemplos executáveis](https://github.com/magacho/mViaCEP/tree/main/examples) — uma demo por adaptador.

@@ -104,12 +104,12 @@ try {
 }
 ```
 
-Cada erro também expõe um discriminante literal `.type` (`"not_found"`, `"invalid_cep"`, `"network"`), útil quando você não tem acesso às classes (por exemplo, no `onError` do `bindCep` via CDN). Veja todos os detalhes na [Referência de API](/api/core#erros-tipados).
+Cada erro também expõe um discriminante literal `.type` (`"not_found"`, `"invalid_cep"`, `"network"`), útil quando você não tem acesso às classes (por exemplo, no `onError` do `bindCep` via CDN). Veja todos os detalhes na [Referência de API](../api/core.md#erros-tipados).
 
 ## Próximos passos
 
-- [Vanilla](/guide/vanilla) — ligar um `<input>` ao DOM com `bindCep`.
-- [React](/guide/react) — o hook `useViaCep()`.
-- [Vue](/guide/vue) — o composable `useViaCep()`.
-- [Angular](/guide/angular) — o `ViaCepService` injetável.
-- [Referência de API do core](/api/core) — assinaturas, tipos e erros.
+- [Vanilla](./vanilla.md) — ligar um `<input>` ao DOM com `bindCep`.
+- [React](./react.md) — o hook `useViaCep()`.
+- [Vue](./vue.md) — o composable `useViaCep()`.
+- [Angular](./angular.md) — o `ViaCepService` injetável.
+- [Referência de API do core](../api/core.md) — assinaturas, tipos e erros.
