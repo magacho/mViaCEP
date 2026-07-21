@@ -12,6 +12,10 @@ Biblioteca **client-side** open source que usa a API gratuita do [ViaCEP](https:
 
 Consulte as [Issues](../../issues) para o backlog e as [Milestones](../../milestones) para o progresso por fase (Core → Adapters → Distribuição).
 
+## Documentação
+
+Guia de uso, guias por adapter e a referência completa da API do core estão no site de documentação (VitePress), em [`docs/`](./docs/) — rode localmente com `npm run docs:dev`.
+
 ## Exemplos
 
 Há uma demo mínima e executável por adapter em [`examples/`](./examples/):
