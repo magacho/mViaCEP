@@ -1,0 +1,304 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>mViaCEP — playground & testes (ViaCEP ao vivo)</title>
+
+<!-- A biblioteca REAL, publicada no npm, servida pelo CDN. Expõe o global `mViaCEP`. -->
+<script src="https://cdn.jsdelivr.net/npm/mviacep"></script>
+
+<style>
+  :root {
+    --ground: #FBFAF6; --surface: #FFFFFF; --surface-2: #F4F1E9;
+    --ink: #1B2233; --ink-soft: #5A637A; --line: #E6E1D5; --line-strong: #D8D2C3;
+    --accent: #DD940F; --accent-soft: #F6E4BE; --primary: #2C3E6B; --primary-soft: #DCE2F0;
+    --pass: #1C7F52; --pass-bg: rgba(28,127,82,0.10); --fail: #C7383F; --fail-bg: rgba(199,56,63,0.09);
+    --shadow: 0 1px 2px rgba(27,34,51,0.05), 0 8px 24px -12px rgba(27,34,51,0.18);
+    --font-sans: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    --font-mono: ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --ground: #13151C; --surface: #1B1E27; --surface-2: #232734;
+      --ink: #ECEAE2; --ink-soft: #99A1B3; --line: #2B303D; --line-strong: #3A4150;
+      --accent: #EFAE38; --accent-soft: #3A2F16; --primary: #8DA6D9; --primary-soft: #232B3D;
+      --pass: #45C089; --pass-bg: rgba(69,192,137,0.13); --fail: #E5717B; --fail-bg: rgba(229,113,123,0.13);
+      --shadow: 0 1px 2px rgba(0,0,0,0.4), 0 12px 30px -14px rgba(0,0,0,0.6);
+    }
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--ground); color: var(--ink); font-family: var(--font-sans); line-height: 1.55; -webkit-font-smoothing: antialiased; }
+  .wrap { max-width: 1080px; margin: 0 auto; padding: clamp(20px,4vw,48px) clamp(16px,4vw,32px) 64px; }
+  .perf { height: 10px; background-image: radial-gradient(circle at 5px 10px, transparent 4px, var(--accent) 4.4px); background-size: 12px 12px; background-position: 0 -5px; background-repeat: repeat-x; opacity: 0.9; margin-bottom: 22px; }
+  .eyebrow { display: inline-flex; align-items: center; gap: 8px; font-family: var(--font-mono); font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--accent); font-weight: 600; }
+  .eyebrow .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--pass); box-shadow: 0 0 0 3px var(--pass-bg); }
+  h1 { font-size: clamp(28px,5vw,44px); line-height: 1.05; margin: 12px 0 8px; letter-spacing: -0.02em; text-wrap: balance; font-weight: 680; }
+  h1 .m { color: var(--accent); }
+  .lede { color: var(--ink-soft); font-size: clamp(15px,2vw,17px); max-width: 60ch; margin: 0; }
+  .meta { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 18px; }
+  .badge { font-family: var(--font-mono); font-size: 12.5px; padding: 5px 10px; border-radius: 6px; border: 1px solid var(--line-strong); background: var(--surface); color: var(--ink-soft); }
+  .badge b { color: var(--ink); font-weight: 600; }
+  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 28px; }
+  @media (max-width: 780px) { .grid { grid-template-columns: 1fr; } }
+  .card { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; box-shadow: var(--shadow); overflow: hidden; }
+  .card-head { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; padding: 16px 20px; border-bottom: 1px solid var(--line); background: var(--surface-2); }
+  .card-head h2 { font-size: 15px; margin: 0; letter-spacing: -0.01em; }
+  .card-head .sub { font-family: var(--font-mono); font-size: 11.5px; color: var(--ink-soft); }
+  .card-body { padding: 20px; }
+  label.field-label { display: block; font-size: 12px; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; color: var(--ink-soft); margin-bottom: 7px; }
+  .cep-row { display: flex; gap: 10px; align-items: stretch; }
+  #cep { flex: 1; font-family: var(--font-mono); font-size: 24px; letter-spacing: 0.06em; font-variant-numeric: tabular-nums; padding: 12px 14px; border-radius: 10px; border: 1.5px solid var(--line-strong); background: var(--ground); color: var(--ink); transition: border-color 0.15s, box-shadow 0.15s; }
+  #cep:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px var(--primary-soft); }
+  #cep::placeholder { color: var(--ink-soft); opacity: 0.55; }
+  .state-chip { display: inline-flex; align-items: center; gap: 6px; font-family: var(--font-mono); font-size: 12px; font-weight: 600; padding: 0 12px; border-radius: 10px; white-space: nowrap; border: 1.5px solid var(--line-strong); color: var(--ink-soft); background: var(--surface-2); min-width: 92px; justify-content: center; }
+  .state-chip[data-s="valid"] { color: var(--pass); background: var(--pass-bg); border-color: transparent; }
+  .state-chip[data-s="invalid"] { color: var(--accent); background: var(--accent-soft); border-color: transparent; }
+  .state-chip[data-s="loading"] { color: var(--primary); background: var(--primary-soft); border-color: transparent; }
+  .state-chip[data-s="error"] { color: var(--fail); background: var(--fail-bg); border-color: transparent; }
+  .suggest { display: flex; flex-wrap: wrap; gap: 7px; margin-top: 14px; }
+  .suggest .lbl { font-size: 12px; color: var(--ink-soft); align-self: center; margin-right: 2px; }
+  .chip { font-family: var(--font-mono); font-size: 12.5px; padding: 4px 9px; border-radius: 20px; cursor: pointer; border: 1px solid var(--line-strong); background: var(--surface); color: var(--ink); transition: background 0.12s, border-color 0.12s, transform 0.05s; }
+  .chip:hover { border-color: var(--accent); background: var(--accent-soft); }
+  .chip:active { transform: translateY(1px); }
+  .chip.bad { border-style: dashed; }
+  .addr { margin-top: 20px; display: grid; grid-template-columns: 1fr 1fr; gap: 12px 14px; }
+  .addr .full { grid-column: 1 / -1; }
+  .addr .out-label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; color: var(--ink-soft); margin-bottom: 3px; }
+  .addr .out-val { font-family: var(--font-mono); font-size: 14px; color: var(--ink); min-height: 21px; padding-bottom: 5px; border-bottom: 1px solid var(--line); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .addr .out-val:empty::before { content: "—"; color: var(--line-strong); }
+  .addr.filled .out-val { animation: flash 0.5s ease; }
+  @keyframes flash { from { background: var(--accent-soft); } to { background: transparent; } }
+  @media (prefers-reduced-motion: reduce) { .addr.filled .out-val { animation: none; } #cep { transition: none; } }
+  .msg { margin-top: 16px; font-size: 13.5px; min-height: 20px; font-family: var(--font-mono); }
+  .msg[data-k="error"] { color: var(--fail); }
+  .msg[data-k="ok"] { color: var(--pass); }
+  .msg[data-k="info"] { color: var(--ink-soft); }
+  .test-summary { display: flex; align-items: center; gap: 10px; font-family: var(--font-mono); font-size: 13px; font-weight: 600; }
+  .test-summary .tally { color: var(--pass); }
+  .rerun { font-family: var(--font-mono); font-size: 12px; cursor: pointer; padding: 4px 10px; border-radius: 6px; border: 1px solid var(--line-strong); background: var(--surface); color: var(--ink); }
+  .rerun:hover { border-color: var(--primary); color: var(--primary); }
+  .suite-title { font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--ink-soft); margin: 16px 0 8px; }
+  .suite-title:first-child { margin-top: 0; }
+  ul.tests { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 4px; }
+  ul.tests li { display: flex; align-items: flex-start; gap: 9px; font-family: var(--font-mono); font-size: 12.5px; line-height: 1.4; padding: 5px 8px; border-radius: 6px; background: var(--pass-bg); }
+  ul.tests li.fail { background: var(--fail-bg); }
+  ul.tests li.pending { background: var(--surface-2); }
+  ul.tests li .mark { flex-shrink: 0; font-weight: 700; color: var(--pass); }
+  ul.tests li.fail .mark { color: var(--fail); }
+  ul.tests li.pending .mark { color: var(--ink-soft); }
+  ul.tests li .desc { color: var(--ink); }
+  ul.tests li .why { color: var(--fail); display: block; font-size: 11.5px; }
+  .usage { margin-top: 24px; }
+  .usage h2 { font-size: 15px; margin: 0 0 12px; }
+  pre { margin: 0 0 14px; padding: 16px; border-radius: 12px; overflow-x: auto; background: var(--surface); border: 1px solid var(--line); font-family: var(--font-mono); font-size: 12.5px; line-height: 1.6; color: var(--ink); }
+  pre .c { color: var(--ink-soft); } pre .k { color: var(--primary); } pre .s { color: var(--accent); }
+  .note { display: flex; gap: 10px; align-items: flex-start; font-size: 13px; color: var(--ink-soft); background: var(--surface-2); border: 1px dashed var(--line-strong); border-radius: 10px; padding: 12px 14px; margin-top: 8px; }
+  .note b { color: var(--ink); font-weight: 600; }
+  footer { margin-top: 34px; font-size: 12.5px; color: var(--ink-soft); text-align: center; font-family: var(--font-mono); }
+  footer a { color: var(--accent); text-decoration: none; }
+  footer a:hover { text-decoration: underline; }
+  a:focus-visible, button:focus-visible, input:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="perf" aria-hidden="true"></div>
+    <span class="eyebrow"><span class="dot"></span> biblioteca open-source · consulta ViaCEP ao vivo</span>
+    <h1><span class="m">m</span>ViaCEP — playground</h1>
+    <p class="lede">Esta página carrega a biblioteca <b>real</b> publicada no npm (via CDN) e consulta o <b>ViaCEP de verdade</b>. Abaixo: o autofill funcionando ao vivo e a suíte de testes das funções do núcleo rodando no seu browser.</p>
+    <div class="meta">
+      <span class="badge"><b>fonte</b> cdn.jsdelivr.net/npm/mviacep</span>
+      <span class="badge"><b>versão</b> <span id="ver">…</span></span>
+      <span class="badge"><b id="badge-tests">…</b> testes</span>
+    </div>
+  </header>
+
+  <div class="grid">
+    <section class="card">
+      <div class="card-head">
+        <h2>Autofill ao vivo</h2>
+        <span class="sub">mViaCEP.bindCep()</span>
+      </div>
+      <div class="card-body">
+        <label class="field-label" for="cep">CEP</label>
+        <div class="cep-row">
+          <input id="cep" inputmode="numeric" autocomplete="off" placeholder="00000-000" aria-describedby="msg" />
+          <span class="state-chip" id="state" data-s="idle">aguardando</span>
+        </div>
+        <div class="suggest">
+          <span class="lbl">tente:</span>
+          <button class="chip" data-cep="01001-000">01001-000</button>
+          <button class="chip" data-cep="20040-030">20040-030</button>
+          <button class="chip" data-cep="70150-900">70150-900</button>
+          <button class="chip bad" data-cep="99999-999" title="Formato válido, sem endereço no ViaCEP">99999-999</button>
+        </div>
+        <div class="addr" id="addr">
+          <div class="full"><div class="out-label">Logradouro</div><div class="out-val" data-f="logradouro"></div></div>
+          <div><div class="out-label">Bairro</div><div class="out-val" data-f="bairro"></div></div>
+          <div><div class="out-label">Cidade</div><div class="out-val" data-f="localidade"></div></div>
+          <div><div class="out-label">UF</div><div class="out-val" data-f="uf"></div></div>
+          <div><div class="out-label">DDD</div><div class="out-val" data-f="ddd"></div></div>
+        </div>
+        <div class="msg" id="msg" data-k="info" role="status">Digite ou escolha um CEP acima.</div>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="card-head">
+        <h2>Suíte de testes</h2>
+        <div class="test-summary"><span class="tally" id="tally">…</span><button class="rerun" id="rerun" type="button">re-run</button></div>
+      </div>
+      <div class="card-body" id="test-body"></div>
+    </section>
+  </div>
+
+  <section class="usage">
+    <h2>Como usar no seu projeto</h2>
+    <pre><span class="c">// npm — núcleo + adapter do seu framework</span>
+<span class="k">import</span> { lookup, isValid } <span class="k">from</span> <span class="s">"mviacep"</span>;
+<span class="k">import</span> { useViaCep } <span class="k">from</span> <span class="s">"mviacep/react"</span>;
+
+<span class="k">const</span> addr = <span class="k">await</span> lookup(<span class="s">"01001-000"</span>);
+<span class="c">// → { logradouro: "Praça da Sé", localidade: "São Paulo", uf: "SP", … }</span></pre>
+    <pre><span class="c">&lt;!-- browser, via CDN — exatamente como esta página --&gt;</span>
+<span class="k">&lt;script</span> src=<span class="s">"https://cdn.jsdelivr.net/npm/mviacep"</span><span class="k">&gt;&lt;/script&gt;</span>
+<span class="k">&lt;script&gt;</span>
+  mViaCEP.bindCep(document.querySelector(<span class="s">"#cep"</span>), {
+    onFill: (a) =&gt; preencherFormulario(a),
+  });
+<span class="k">&lt;/script&gt;</span></pre>
+    <div class="note">
+      <span aria-hidden="true">🌐</span>
+      <span><b>Rede real:</b> esta página consulta <code>viacep.com.br</code> diretamente do browser (o ViaCEP tem CORS liberado). Precisa de conexão com a internet. Abra por <code>file://</code> ou hospede em qualquer servidor estático.</span>
+    </div>
+  </section>
+
+  <footer>mViaCEP · <a href="https://github.com/magacho/mViaCEP" target="_blank" rel="noopener">github.com/magacho/mViaCEP</a> · MIT</footer>
+</div>
+
+<script>
+(function () {
+  "use strict";
+
+  if (typeof window.mViaCEP === "undefined") {
+    document.getElementById("msg").textContent = "Não foi possível carregar a biblioteca do CDN — verifique sua conexão.";
+    document.getElementById("msg").dataset.k = "error";
+    document.getElementById("tally").textContent = "CDN indisponível";
+    return;
+  }
+
+  // Tudo abaixo usa a biblioteca REAL carregada do CDN — nada de mock.
+  var api = window.mViaCEP;
+  var normalize = api.normalize, isValid = api.isValid, mask = api.mask;
+  var lookup = api.lookup, bindCep = api.bindCep, isViaCepError = api.isViaCepError;
+
+  document.getElementById("ver").textContent = "npm@latest";
+
+  /* ---- autofill ao vivo (rede real) ---- */
+  var cep = document.getElementById("cep");
+  var state = document.getElementById("state");
+  var msg = document.getElementById("msg");
+  var addr = document.getElementById("addr");
+  var fields = { logradouro: addr.querySelector('[data-f=logradouro]'), bairro: addr.querySelector('[data-f=bairro]'),
+    localidade: addr.querySelector('[data-f=localidade]'), uf: addr.querySelector('[data-f=uf]'), ddd: addr.querySelector('[data-f=ddd]') };
+  function setState(s, t) { state.dataset.s = s; state.textContent = t; }
+  function setMsg(k, t) { msg.dataset.k = k; msg.textContent = t; }
+  function clearAddr() { addr.classList.remove("filled"); Object.keys(fields).forEach(function (k) { fields[k].textContent = ""; }); }
+  function fill(a) { Object.keys(fields).forEach(function (k) { fields[k].textContent = a[k] || ""; }); addr.classList.remove("filled"); void addr.offsetWidth; addr.classList.add("filled"); }
+
+  cep.addEventListener("input", function () {
+    cep.value = mask(cep.value);
+    if (cep.value.trim() === "") { setState("idle", "aguardando"); setMsg("info", "Digite ou escolha um CEP acima."); clearAddr(); return; }
+    if (isValid(cep.value)) setState("valid", "válido ✓");
+    else { setState("invalid", "incompleto"); setMsg("info", "Faltam dígitos para 00000-000."); clearAddr(); }
+  });
+
+  bindCep(cep, {
+    debounceMs: 350,
+    onStart: function () { setState("loading", "buscando…"); setMsg("info", "Consultando o ViaCEP…"); },
+    onFill: function (a) { setState("valid", "encontrado ✓"); setMsg("ok", "Endereço preenchido a partir do CEP (ViaCEP)."); fill(a); },
+    onError: function (err) {
+      clearAddr();
+      if (err.type === "not_found") { setState("error", "não encontrado"); setMsg("error", 'NotFoundError — o ViaCEP não tem endereço para "' + err.cep + '".'); }
+      else if (err.type === "invalid_cep") { setState("invalid", "inválido"); setMsg("error", "InvalidCepError — formato inválido."); }
+      else { setState("error", "erro de rede"); setMsg("error", "NetworkError — " + err.message); }
+    }
+  });
+
+  Array.prototype.forEach.call(document.querySelectorAll(".chip"), function (btn) {
+    btn.addEventListener("click", function () {
+      cep.value = btn.dataset.cep;
+      cep.dispatchEvent(new Event("input", { bubbles: true }));
+      cep.focus();
+    });
+  });
+
+  /* ---- suíte de testes ---- */
+  var suites = [
+    { name: "normalize()", tests: [
+      ["remove máscara e não-dígitos", function () { return normalize("01001-000") === "01001000"; }],
+      ["ignora espaços ao redor", function () { return normalize(" 01001000 ") === "01001000"; }],
+      ["mantém só os dígitos", function () { return normalize("abc12cd3") === "123"; }]
+    ]},
+    { name: "isValid()", tests: [
+      ["8 dígitos → true", function () { return isValid("01001-000") === true; }],
+      ["curto → false", function () { return isValid("123") === false; }],
+      ["9 dígitos → false", function () { return isValid("012345678") === false; }]
+    ]},
+    { name: "mask()", tests: [
+      ["formata 00000-000", function () { return mask("01001000") === "01001-000"; }],
+      ["≤5 dígitos sem hífen", function () { return mask("0100") === "0100"; }],
+      ["6 dígitos → 01001-0", function () { return mask("010010") === "01001-0"; }],
+      ["trunca em 8 dígitos", function () { return mask("010010009999") === "01001-000"; }]
+    ]},
+    { name: "erros tipados", tests: [
+      ["InvalidCepError em CEP curto", function () { return lookup("123").then(function () { return false; }, function (e) { return e.type === "invalid_cep" && isViaCepError(e); }); }]
+    ]},
+    { name: "lookup() — ViaCEP ao vivo (precisa de internet)", tests: [
+      ["01001-000 → São Paulo/SP", function () { return lookup("01001-000").then(function (a) { return a.localidade === "São Paulo" && a.uf === "SP"; }); }],
+      ["99999-999 → NotFoundError", function () { return lookup("99999-999").then(function () { return false; }, function (e) { return e.type === "not_found"; }); }]
+    ]}
+  ];
+
+  var body = document.getElementById("test-body");
+  var tally = document.getElementById("tally");
+  var badgeTests = document.getElementById("badge-tests");
+
+  function runTests() {
+    body.innerHTML = "";
+    var total = 0, pending = [];
+    suites.forEach(function (suite) {
+      var h = document.createElement("div"); h.className = "suite-title"; h.textContent = suite.name; body.appendChild(h);
+      var ul = document.createElement("ul"); ul.className = "tests"; body.appendChild(ul);
+      suite.tests.forEach(function (t) {
+        total++;
+        var li = document.createElement("li"); li.className = "pending";
+        li.innerHTML = '<span class="mark">•</span><span class="desc">' + t[0] + '</span>';
+        ul.appendChild(li);
+        var result;
+        try { result = t[1](); } catch (err) { result = false; }
+        pending.push(Promise.resolve(result).then(function (ok) {
+          li.classList.remove("pending"); li.classList.toggle("fail", !ok);
+          li.querySelector(".mark").textContent = ok ? "✓" : "✗";
+          if (!ok) { var w = document.createElement("span"); w.className = "why"; w.textContent = "falhou"; li.querySelector(".desc").appendChild(w); }
+          return ok;
+        }, function () { li.classList.remove("pending"); li.classList.add("fail"); li.querySelector(".mark").textContent = "✗"; return false; }));
+      });
+    });
+    badgeTests.textContent = String(total);
+    tally.textContent = "rodando…"; tally.style.color = "var(--ink-soft)";
+    Promise.all(pending).then(function (results) {
+      var passed = results.filter(Boolean).length, allOk = passed === total;
+      tally.textContent = passed + "/" + total + " passaram";
+      tally.style.color = allOk ? "var(--pass)" : "var(--fail)";
+    });
+  }
+
+  document.getElementById("rerun").addEventListener("click", runTests);
+  runTests();
+})();
+</script>
+</body>
+</html>
